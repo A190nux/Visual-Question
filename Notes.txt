@@ -1,0 +1,23 @@
+Both text and image encoders use transformers
+
+linear layers with layer normalisation and a high dropout value (0.5)
+
+in this approach, the most common answer that returns the highest score per image-question pair
+is greedily selected. If this selection yields in several answers, the answer which appears most often in the whole
+training set is used. In case of a tie, the pairwise Levenshtein distance is used to find the answer that is most representative to all others.
+
+In both cases the linear classifier is trained using cross entropy loss with rotation as image augmentation.
+
+We train only the additional linear classifier and use the pre-trained CLIP model as image and text encoder.
+
+We also introduce an auxiliary loss for answer type prediction. This loss helps to learn an answer masking for the eight answer types “other”,
+“numbers”, “yes”, “no”, “color”, “unsuitable” and “unanswerable”. 
+
+The answer types are retrieved by regular expression matching from the best selected answer per image question pair.
+
+The learned predictions for the answer types are linearly projected to a vector with the same dimension (5726) as the number of possible answer classes.
+
+After a sigmoid layer this vector is multiplied with the logits of the answer vocabulary. This enables to mask answers that do
+not correspond to the current answer type during inference. Both cross entropy losses, of the intermediate answer type
+prediction and the final answer classification, are weighted equally.
+
